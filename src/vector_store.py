@@ -33,26 +33,48 @@ class HybridVectorStore:
         storage_path: str = None,
         collection_name: str = None
     ):
-        self.url = url if url is not None else settings.QDRANT_URL
-        self.api_key = api_key if api_key is not None else settings.QDRANT_API_KEY
-        self.storage_path = storage_path or settings.QDRANT_STORAGE_PATH
-        self.collection_name = collection_name or settings.QDRANT_COLLECTION_NAME
-        
-        if self.url:
-            self.client = QdrantClient(
-                url=self.url,
-                api_key=self.api_key if self.api_key else None,
-                timeout=60
-            )
-        else:
-            os.makedirs(self.storage_path, exist_ok=True)
-            self.client = QdrantClient(path=self.storage_path)
-
-        self._init_collection()
-        
+        self._url = url
+        self._api_key = api_key
+        self._storage_path = storage_path
+        self._collection_name = collection_name
+        self._client: QdrantClient | None = None
+        self._connected_target: str | None = None
         self.bm25_corpus: List[Dict[str, Any]] = []
         self.bm25_index: BM25Okapi | None = None
-        self._rebuild_bm25()
+
+    @property
+    def url(self) -> str:
+        return self._url or settings.QDRANT_URL
+
+    @property
+    def api_key(self) -> str:
+        return self._api_key or settings.QDRANT_API_KEY
+
+    @property
+    def storage_path(self) -> str:
+        return self._storage_path or settings.QDRANT_STORAGE_PATH
+
+    @property
+    def collection_name(self) -> str:
+        return self._collection_name or settings.QDRANT_COLLECTION_NAME
+
+    @property
+    def client(self) -> QdrantClient:
+        target = self.url or self.storage_path
+        if self._client is None or self._connected_target != target:
+            if self.url:
+                self._client = QdrantClient(
+                    url=self.url,
+                    api_key=self.api_key if self.api_key else None,
+                    timeout=60
+                )
+            else:
+                os.makedirs(self.storage_path, exist_ok=True)
+                self._client = QdrantClient(path=self.storage_path)
+            self._connected_target = target
+            self._init_collection()
+            self._rebuild_bm25()
+        return self._client
 
     def _init_collection(self):
         collections = [c.name for c in self.client.get_collections().collections]

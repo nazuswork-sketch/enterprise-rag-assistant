@@ -8,16 +8,25 @@ from src.config import settings
 class GeminiEmbeddingClient:
     def __init__(self, api_key: str = None, model: str = None):
         self._api_key = api_key
-        self.models = [
-            "models/gemini-embedding-001",
-            "models/gemini-embedding-2",
-            "models/gemini-embedding-2-preview"
-        ]
-        self.active_model = model or "models/gemini-embedding-001"
+        self._model = model
 
     @property
     def api_key(self) -> str:
         return self._api_key or settings.GEMINI_API_KEY
+
+    @property
+    def active_model(self) -> str:
+        return self._model or settings.GEMINI_EMBEDDING_MODEL
+
+    @property
+    def models(self) -> List[str]:
+        cfg = self.active_model
+        candidates = [cfg, "models/gemini-embedding-2", "models/gemini-embedding-2-preview"]
+        unique = []
+        for c in candidates:
+            if c and c not in unique:
+                unique.append(c)
+        return unique
 
     def _get_urls(self, model: str):
         key = self.api_key

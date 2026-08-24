@@ -71,7 +71,8 @@ with st.sidebar:
     st.markdown(f"**🧠 Embedding Model:**  \n`{settings.GEMINI_EMBEDDING_MODEL}` (3072 dims)")
     st.markdown(f"**⚡ LLM Generator:**  \n`{settings.OPENROUTER_MODEL}`")
     st.markdown(f"**🎯 Cross-Encoder Reranker:**  \n`FlashRank (Local ONNX)`")
-    st.markdown(f"**🗄️ Vector DB:**  \n`Embedded Qdrant (Zero Docker)`")
+    db_label = "Qdrant Cloud (AWS)" if settings.QDRANT_URL else "Embedded Qdrant (Local)"
+    st.markdown(f"**🗄️ Vector DB:**  \n`{db_label}`")
     st.markdown(f"**🔍 Sparse Index:**  \n`BM25 Okapi Hybrid Fusion`")
     
     st.divider()
