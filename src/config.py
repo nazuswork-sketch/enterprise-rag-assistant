@@ -39,7 +39,7 @@ class Settings:
         
     @property
     def OPENROUTER_MODEL(self) -> str:
-        return get_secret('OPENROUTER_MODEL', 'nvidia/nemotron-3-ultra-550b-a55b:free')
+        return get_secret('OPENROUTER_MODEL', 'nvidia/nemotron-3.5-lightning:free')
         
     @property
     def OPENROUTER_BASE_URL(self) -> str:
