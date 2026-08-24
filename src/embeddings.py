@@ -7,21 +7,26 @@ from src.config import settings
 
 class GeminiEmbeddingClient:
     def __init__(self, api_key: str = None, model: str = None):
-        self.api_key = api_key or settings.GEMINI_API_KEY
+        self._api_key = api_key
         self.models = [
             "models/gemini-embedding-001",
             "models/gemini-embedding-2",
             "models/gemini-embedding-2-preview"
         ]
         self.active_model = model or "models/gemini-embedding-001"
-        if not self.api_key:
-            raise ValueError("GEMINI_API_KEY is not set.")
+
+    @property
+    def api_key(self) -> str:
+        return self._api_key or settings.GEMINI_API_KEY
 
     def _get_urls(self, model: str):
+        key = self.api_key
+        if not key:
+            raise ValueError("GEMINI_API_KEY is not set. Please add it to your Streamlit Cloud Secrets (in TOML format) or .env file.")
         if not model.startswith("models/"):
             model = f"models/{model}"
-        single_url = f"https://generativelanguage.googleapis.com/v1beta/{model}:embedContent?key={self.api_key}"
-        batch_url = f"https://generativelanguage.googleapis.com/v1beta/{model}:batchEmbedContents?key={self.api_key}"
+        single_url = f"https://generativelanguage.googleapis.com/v1beta/{model}:embedContent?key={key}"
+        batch_url = f"https://generativelanguage.googleapis.com/v1beta/{model}:batchEmbedContents?key={key}"
         return single_url, batch_url
 
     def embed_query(self, text: str) -> List[float]:

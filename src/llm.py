@@ -10,21 +10,36 @@ class NemotronLLMClient:
         model: str = None,
         base_url: str = None
     ):
-        self.api_key = api_key or settings.OPENROUTER_API_KEY
-        self.model = model or settings.OPENROUTER_MODEL
-        self.base_url = base_url or settings.OPENROUTER_BASE_URL
-        
-        if not self.api_key:
-            raise ValueError("OPENROUTER_API_KEY is not set.")
-            
-        self.client = OpenAI(
-            base_url=self.base_url,
-            api_key=self.api_key,
-            default_headers={
-                "HTTP-Referer": "http://localhost:8501",
-                "X-Title": "Enterprise RAG Assistant"
-            }
-        )
+        self._api_key = api_key
+        self._model = model
+        self._base_url = base_url
+        self._client = None
+
+    @property
+    def api_key(self) -> str:
+        return self._api_key or settings.OPENROUTER_API_KEY
+
+    @property
+    def model(self) -> str:
+        return self._model or settings.OPENROUTER_MODEL
+
+    @property
+    def base_url(self) -> str:
+        return self._base_url or settings.OPENROUTER_BASE_URL
+
+    @property
+    def client(self) -> OpenAI:
+        key = self.api_key or "sk-dummy-key"
+        if self._client is None or getattr(self._client, "api_key", "") != key:
+            self._client = OpenAI(
+                base_url=self.base_url,
+                api_key=key,
+                default_headers={
+                    "HTTP-Referer": "http://localhost:8501",
+                    "X-Title": "Enterprise RAG Assistant"
+                }
+            )
+        return self._client
 
     def generate(
         self,
