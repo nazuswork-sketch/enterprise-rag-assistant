@@ -82,16 +82,19 @@ class NemotronLLMClient:
         temperature: float = 0.2,
         max_tokens: int = 1024
     ) -> Generator[str, None, None]:
-        """Stream completion tokens."""
-        stream = self.client.chat.completions.create(
-            model=self.model,
-            messages=messages,
-            temperature=temperature,
-            max_tokens=max_tokens,
-            stream=True
-        )
-        for chunk in stream:
-            if chunk.choices and chunk.choices[0].delta.content:
-                yield chunk.choices[0].delta.content
+        """Stream completion tokens with robust exception handling."""
+        try:
+            stream = self.client.chat.completions.create(
+                model=self.model,
+                messages=messages,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                stream=True
+            )
+            for chunk in stream:
+                if chunk.choices and chunk.choices[0].delta.content:
+                    yield chunk.choices[0].delta.content
+        except Exception as e:
+            yield f"⚠️ [Streaming Error: {e}]"
 
 llm_client = NemotronLLMClient()

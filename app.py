@@ -142,9 +142,12 @@ with tab_chat:
             with st.spinner("Retrieving hybrid contexts & reranking with FlashRank..."):
                 result = rag_engine.query(prompt)
                 
-            st.markdown(result["answer"])
+            if result.get("is_error"):
+                st.error(result["answer"])
+            else:
+                st.markdown(result["answer"])
             
-            if result["sources"]:
+            if result.get("sources"):
                 with st.expander(f"📚 View {len(result['sources'])} Grounded Sources & Retrieval Scores"):
                     for idx, s in enumerate(result["sources"]):
                         st.markdown(f"""
@@ -254,7 +257,9 @@ with tab_eval:
         
         st.markdown("#### 📋 Detailed Test Case Breakdown")
         detail_df = pd.DataFrame(res["detailed_results"])
-        st.dataframe(detail_df[["question", "faithfulness", "context_precision", "context_recall", "answer_relevancy", "latency_seconds"]], use_container_width=True)
+        cols = ["question", "faithfulness", "context_precision", "context_recall", "answer_relevancy", "eval_status", "latency_seconds"]
+        avail_cols = [c for c in cols if c in detail_df.columns]
+        st.dataframe(detail_df[avail_cols], use_container_width=True)
         
         with st.expander("🔍 View Full Evaluator Reasoning per Test Case"):
             for idx, r in enumerate(res["detailed_results"]):

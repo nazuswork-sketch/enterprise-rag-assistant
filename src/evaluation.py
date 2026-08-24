@@ -116,13 +116,17 @@ Generated Answer:
             time.sleep(0.5)  # Rate pacing
             
         df = pd.DataFrame(results)
+        valid_df = df[df["eval_status"] == "SUCCESS"]
+        failed_count = int((df["eval_status"] != "SUCCESS").sum())
         
         summary = {
             "total_questions": len(results),
-            "avg_faithfulness": round(float(df["faithfulness"].mean()), 3),
-            "avg_context_precision": round(float(df["context_precision"].mean()), 3),
-            "avg_context_recall": round(float(df["context_recall"].mean()), 3),
-            "avg_answer_relevancy": round(float(df["answer_relevancy"].mean()), 3),
+            "valid_evaluations": int(len(valid_df)),
+            "failed_evaluations": failed_count,
+            "avg_faithfulness": round(float(valid_df["faithfulness"].mean()), 3) if not valid_df.empty else 0.0,
+            "avg_context_precision": round(float(valid_df["context_precision"].mean()), 3) if not valid_df.empty else 0.0,
+            "avg_context_recall": round(float(valid_df["context_recall"].mean()), 3) if not valid_df.empty else 0.0,
+            "avg_answer_relevancy": round(float(valid_df["answer_relevancy"].mean()), 3) if not valid_df.empty else 0.0,
             "avg_latency_seconds": round(float(df["latency_seconds"].mean()), 3),
             "detailed_results": results
         }

@@ -74,10 +74,13 @@ class EnterpriseRAGEngine:
         
         gen_result = self.llm.generate(messages)
         total_latency = retrieval_data["retrieval_latency"] + retrieval_data["rerank_latency"] + gen_result["latency_seconds"]
+        has_error = bool(gen_result.get("error"))
         
         return {
             "answer": gen_result["content"],
-            "sources": [
+            "is_error": has_error,
+            "error_detail": gen_result.get("error"),
+            "sources": [] if has_error else [
                 {
                     "source": d.get("source"),
                     "doc_type": d.get("doc_type"),

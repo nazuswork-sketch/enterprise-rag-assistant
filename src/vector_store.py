@@ -133,11 +133,8 @@ class HybridVectorStore:
             total_points += len(points)
             print(f"  [Qdrant Cloud] Indexed {total_points}/{total_chunks} chunks into '{self.collection_name}'", flush=True)
             
-        # Update BM25 in memory directly
-        self.bm25_corpus = [c for c in chunks]
-        tokenized_corpus = [self._tokenize(doc.get("text", "")) for doc in self.bm25_corpus]
-        if tokenized_corpus:
-            self.bm25_index = BM25Okapi(tokenized_corpus)
+        # Synchronize and rebuild BM25 sparse index across the complete collection
+        self._rebuild_bm25()
             
         return total_points
 
