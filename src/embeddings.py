@@ -1,5 +1,6 @@
 import json
 import time
+import base64
 import urllib.request
 import urllib.error
 from typing import List
@@ -38,6 +39,44 @@ class GeminiEmbeddingClient:
         batch_url = f"https://generativelanguage.googleapis.com/v1beta/{model}:batchEmbedContents?key={key}"
         return single_url, batch_url
 
+    def embed_image(self, image_bytes: bytes, mime_type: str = "image/png") -> List[float]:
+        """Embed an image using Gemini Embedding 2 in the same 3072-dim joint space as text."""
+        if not image_bytes:
+            return [0.0] * settings.EMBEDDING_DIM
+            
+        b64_data = base64.b64encode(image_bytes).decode("utf-8")
+        for model in self.models:
+            single_url, _ = self._get_urls(model)
+            payload = {
+                "model": model,
+                "content": {
+                    "parts": [
+                        {
+                            "inlineData": {
+                                "mimeType": mime_type,
+                                "data": b64_data
+                            }
+                        }
+                    ]
+                }
+            }
+            req = urllib.request.Request(
+                single_url,
+                data=json.dumps(payload).encode("utf-8"),
+                headers={"Content-Type": "application/json"}
+            )
+            try:
+                with urllib.request.urlopen(req, timeout=30) as response:
+                    res = json.loads(response.read().decode("utf-8"))
+                    values = res.get("embedding", {}).get("values", [])
+                    if values and len(values) == settings.EMBEDDING_DIM:
+                        return values
+            except Exception as e:
+                print(f"[Multimodal Image Embedding] {model} note: {e}")
+                continue
+                
+        return [0.0] * settings.EMBEDDING_DIM
+
     def embed_query(self, text: str) -> List[float]:
         """Embed a single query text string with multi-model fallback."""
         if not text or not text.strip():
@@ -58,7 +97,7 @@ class GeminiEmbeddingClient:
                 with urllib.request.urlopen(req, timeout=30) as response:
                     res = json.loads(response.read().decode('utf-8'))
                     values = res.get("embedding", {}).get("values", [])
-                    if values:
+                    if values and len(values) == settings.EMBEDDING_DIM:
                         return values
             except urllib.error.HTTPError as e:
                 if e.code == 429:

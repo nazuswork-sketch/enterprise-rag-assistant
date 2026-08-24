@@ -3,6 +3,7 @@ import io
 import sys
 import json
 import time
+import base64
 import pandas as pd
 import streamlit as st
 from pathlib import Path
@@ -129,12 +130,18 @@ with tab_chat:
                         *Retrieval Confidence:* Rerank: `{s['rerank_score']}` | Hybrid: `{s['hybrid_score']}` | Type: `{s.get('doc_type', 'doc')}`  
                         > {s['full_text']}
                         """)
+                        if s.get("image_base64"):
+                            try:
+                                raw_img = base64.b64decode(s["image_base64"])
+                                st.image(raw_img, caption=f"📸 {s.get('image_name', 'Visual Asset')} (Source: {s['source']})", use_container_width=True)
+                            except Exception:
+                                pass
             if "telemetry" in msg:
                 t = msg["telemetry"]
                 st.caption(f"⚡ Total Latency: **{t.get('total_latency')}s** | 🔍 Retrieval: **{t.get('retrieval_latency')}s** | 🎯 Rerank: **{t.get('rerank_latency')}s** | 🤖 LLM: **{t.get('llm_latency')}s** | 🪙 Tokens: **{t.get('tokens')}**")
 
     # Handle user query
-    user_input = st.chat_input("Ask a question about internal enterprise policies or infrastructure...")
+    user_input = st.chat_input("Ask a question about internal enterprise policies, code standards, or diagrams...")
     prompt = sample_q or user_input
 
     if prompt:
@@ -162,6 +169,12 @@ with tab_chat:
                         *Retrieval Confidence:* Rerank: `{s['rerank_score']}` | Hybrid: `{s['hybrid_score']}` | Type: `{s.get('doc_type', 'doc')}`  
                         > {s['full_text']}
                         """)
+                        if s.get("image_base64"):
+                            try:
+                                raw_img = base64.b64decode(s["image_base64"])
+                                st.image(raw_img, caption=f"📸 {s.get('image_name', 'Visual Asset')} (Source: {s['source']})", use_container_width=True)
+                            except Exception:
+                                pass
                         
             telemetry = {
                 "total_latency": result["total_latency_seconds"],
@@ -182,14 +195,14 @@ with tab_chat:
 
 # ----------------- TAB 2: INGESTION & KNOWLEDGE BASE -----------------
 with tab_docs:
-    st.markdown("### 📁 Ingestion & Knowledge Base Management")
-    st.markdown("Upload documents (PDF, Markdown, Slack JSON exports, TXT) to automatically chunk and embed them into the embedded Qdrant store.")
+    st.markdown("### 📁 Multimodal Ingestion & Knowledge Base Management")
+    st.markdown("Upload documents (PDF, Markdown, Slack JSON, TXT) and visual engineering assets (PNG, JPG, WEBP) to automatically embed them with Gemini Embedding 2.")
     
     col_upload, col_action = st.columns([3, 1])
     with col_upload:
         uploaded_files = st.file_uploader(
-            "Upload Enterprise Documents",
-            type=["pdf", "md", "txt", "json"],
+            "Upload Enterprise Documents & Diagrams",
+            type=["pdf", "md", "txt", "json", "png", "jpg", "jpeg", "webp"],
             accept_multiple_files=True
         )
         
@@ -284,17 +297,17 @@ with tab_arch:
     * **Multi-Format Parsers**: PDF (`pypdf`), Markdown, Slack exports (`JSON`), Text.
     * **Recursive Semantic Chunker**: Splits along paragraph & sentence boundaries while attaching chunk IDs, source document names, and line/page numbers.
 
-    #### 2. Zero-Docker Hybrid Vector Store
-    * **Dense Vectors**: Google AI Studio **`gemini-embedding-2`** producing 3072-dimensional embeddings.
-    * **Sparse Vectors**: In-memory **`BM25Okapi`** keyword index for exact keyword matching (acronyms, command names, error codes).
-    * **Reciprocal Rank Fusion (RRF)**: Combines dense cosine similarity with sparse BM25 scores.
+    #### 2. Multimodal Hybrid Vector Store (Qdrant Cloud)
+    * **Dense Multimodal Vectors**: Google AI Studio **`gemini-embedding-2`** (3072 dims) providing joint vector embeddings for both **technical text** and **visual diagrams/blueprints**.
+    * **Sparse Keyword Index**: In-memory **`BM25Okapi`** regex keyword index for exact technical terminology (e.g. `SEV-1`, `k8s-rollback`, `R1.1.9.1`).
+    * **Reciprocal Rank Fusion (RRF)**: Fuses dense semantic scores with sparse keyword ranks.
 
     #### 3. Cross-Encoder Reranker
-    * **FlashRank**: Runs locally via ONNX (`ms-marco-TinyBERT-L-2-v2`). Re-ranks Top-K hybrid candidates to Top-N most relevant passages, filtering out context clutter.
+    * **FlashRank**: Runs locally via ONNX (`ms-marco-TinyBERT-L-2-v2`). Re-ranks Top-K hybrid candidates to Top-N most relevant passages and visual assets.
 
     #### 4. Generation & Grounding
-    * **LLM**: OpenRouter **`nvidia/nemotron-3-ultra-550b-a55b:free`**.
-    * **Grounding & Citation Directives**: Strict system prompt enforcing factual citations and explicit fallback if documentation lacks context.
+    * **LLM**: OpenRouter **`nvidia/nemotron-3.5-lightning:free`**.
+    * **Grounding & Citation Directives**: Strict system prompt enforcing human-readable document, page, and section citations with inline visual asset rendering.
 
     #### 5. Evaluation & Observability
     * **CI/CD Evaluator (`run_eval.py`)**: Runs against a Golden Q&A dataset to measure **Faithfulness**, **Context Precision**, and **Recall**.

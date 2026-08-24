@@ -92,6 +92,8 @@ class EnterpriseRAGEngine:
                     "page": d.get("page"),
                     "section_id": d.get("section_id"),
                     "channel": d.get("channel"),
+                    "image_name": d.get("image_name"),
+                    "image_base64": d.get("image_base64"),
                     "chunk_id": d.get("chunk_id"),
                     "rerank_score": d.get("rerank_score"),
                     "hybrid_score": d.get("hybrid_score"),

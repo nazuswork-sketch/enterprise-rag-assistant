@@ -1,6 +1,7 @@
 import os
 import re
 import uuid
+import base64
 from typing import List, Dict, Any, Tuple
 from rank_bm25 import BM25Okapi
 from qdrant_client import QdrantClient
@@ -134,10 +135,30 @@ class HybridVectorStore:
         total_points = 0
         for b_idx in range(0, total_chunks, batch_size):
             batch_chunks = chunks[b_idx:b_idx + batch_size]
-            batch_texts = [c["text"] for c in batch_chunks]
+            batch_embeddings = []
             
-            # Embed current batch
-            batch_embeddings = embedding_client.embed_documents(batch_texts, batch_size=len(batch_texts))
+            # Separate text vs image chunks for optimal embedding
+            text_items = []
+            text_pos = []
+            
+            for i, chunk in enumerate(batch_chunks):
+                if chunk.get("doc_type") == "image" and chunk.get("image_base64"):
+                    try:
+                        raw_bytes = base64.b64decode(chunk["image_base64"])
+                        img_emb = embedding_client.embed_image(raw_bytes, chunk.get("mime_type", "image/png"))
+                        batch_embeddings.append(img_emb)
+                    except Exception as e:
+                        print(f"Image embed note: {e}")
+                        batch_embeddings.append([0.0] * settings.EMBEDDING_DIM)
+                else:
+                    text_items.append(chunk.get("text", ""))
+                    text_pos.append(i)
+                    batch_embeddings.append([0.0] * settings.EMBEDDING_DIM)
+                    
+            if text_items:
+                text_embs = embedding_client.embed_documents(text_items, batch_size=len(text_items))
+                for pos, emb in zip(text_pos, text_embs):
+                    batch_embeddings[pos] = emb
             
             points = []
             for i, chunk in enumerate(batch_chunks):

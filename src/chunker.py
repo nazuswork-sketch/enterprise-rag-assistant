@@ -51,6 +51,16 @@ class IntelligentChunker:
         global_chunk_idx = 0
         
         for doc in documents:
+            # Preserve visual diagrams / image assets intact
+            if doc.get("doc_type") == "image":
+                img_meta = {**doc}
+                img_meta["chunk_id"] = f"{doc.get('source', 'img')}_img_{global_chunk_idx}"
+                img_meta["chunk_index"] = 0
+                img_meta["total_chunks_in_doc"] = 1
+                chunked_docs.append(img_meta)
+                global_chunk_idx += 1
+                continue
+                
             text = doc.get("text", "")
             raw_chunks = self._split_text(text)
             

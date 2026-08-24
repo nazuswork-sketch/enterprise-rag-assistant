@@ -1,11 +1,14 @@
 import os
 import json
+import base64
+import io
 from pathlib import Path
 from typing import List, Dict, Any
 from pypdf import PdfReader
+from PIL import Image
 
 class DocumentParser:
-    """Parses heterogeneous documents into normalized text with metadata."""
+    """Parses heterogeneous documents into normalized text and multimodal image assets with metadata."""
 
     @staticmethod
     def parse_pdf(file_path: Path) -> List[Dict[str, Any]]:
@@ -21,6 +24,38 @@ class DocumentParser:
                     "page": page_idx + 1,
                     "file_path": str(file_path)
                 })
+                
+            # Multimodal: Extract high-value diagrams/figures from PDF page
+            if hasattr(page, "images"):
+                for img_idx, img in enumerate(page.images):
+                    try:
+                        img_bytes = img.data
+                        # Verify image validity and dimension
+                        pil_img = Image.open(io.BytesIO(img_bytes))
+                        if pil_img.width >= 60 and pil_img.height >= 60:
+                            # Optimize image size for fast cloud transfer
+                            if pil_img.width > 800 or pil_img.height > 800:
+                                pil_img.thumbnail((800, 800))
+                                out_buf = io.BytesIO()
+                                pil_img.convert("RGB").save(out_buf, format="JPEG", quality=85)
+                                img_bytes = out_buf.getvalue()
+                                mime_type = "image/jpeg"
+                            else:
+                                mime_type = "image/png"
+                                
+                            b64_str = base64.b64encode(img_bytes).decode("utf-8")
+                            docs.append({
+                                "text": f"Visual Diagram/Drawing on Page {page_idx+1} of {file_path.name}: {img.name}",
+                                "source": file_path.name,
+                                "doc_type": "image",
+                                "page": page_idx + 1,
+                                "image_name": f"{file_path.stem}_p{page_idx+1}_fig{img_idx+1}",
+                                "image_base64": b64_str,
+                                "mime_type": mime_type,
+                                "file_path": str(file_path)
+                            })
+                    except Exception as e:
+                        pass
         return docs
 
     @staticmethod
@@ -95,12 +130,47 @@ class DocumentParser:
             "file_path": str(file_path)
         }]
 
+    @staticmethod
+    def parse_image(file_path: Path) -> List[Dict[str, Any]]:
+        """Parses standalone image assets (diagrams, drawings, charts)."""
+        try:
+            with open(file_path, "rb") as f:
+                img_bytes = f.read()
+            pil_img = Image.open(io.BytesIO(img_bytes))
+            
+            # Compress / optimize for fast multimodal embedding
+            if pil_img.width > 800 or pil_img.height > 800:
+                pil_img.thumbnail((800, 800))
+                out_buf = io.BytesIO()
+                pil_img.convert("RGB").save(out_buf, format="JPEG", quality=85)
+                img_bytes = out_buf.getvalue()
+                mime_type = "image/jpeg"
+            else:
+                ext = file_path.suffix.lstrip(".").lower()
+                mime_type = f"image/{ext if ext != 'jpg' else 'jpeg'}"
+                
+            b64_str = base64.b64encode(img_bytes).decode("utf-8")
+            return [{
+                "text": f"Visual Architecture/Engineering Image: {file_path.name}",
+                "source": file_path.name,
+                "doc_type": "image",
+                "image_name": file_path.stem,
+                "image_base64": b64_str,
+                "mime_type": mime_type,
+                "file_path": str(file_path)
+            }]
+        except Exception as e:
+            print(f"Warning: Failed to parse image {file_path}: {e}")
+            return []
+
     @classmethod
     def parse_file(cls, file_path: str | Path) -> List[Dict[str, Any]]:
         path = Path(file_path)
         suffix = path.suffix.lower()
         if suffix == ".pdf":
             return cls.parse_pdf(path)
+        elif suffix in [".png", ".jpg", ".jpeg", ".webp", ".bmp", ".gif"]:
+            return cls.parse_image(path)
         elif suffix in [".md", ".markdown"]:
             return cls.parse_markdown(path)
         elif suffix == ".json":
