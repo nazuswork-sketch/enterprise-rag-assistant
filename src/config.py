@@ -67,6 +67,7 @@ class Settings:
     RERANK_TOP_N: int = 5         # Number of candidates sent to LLM after reranker
     CHUNK_SIZE: int = 1500        # Optimized semantic chunk size for high-precision fact lookup
     CHUNK_OVERLAP: int = 200
+    MAX_GENERATION_TOKENS: int = 4096  # Max output tokens to prevent answer truncation
     
     # Observability
     PHOENIX_PORT: int = 6006

@@ -45,12 +45,13 @@ class NemotronLLMClient:
         self,
         messages: List[Dict[str, str]],
         temperature: float = 0.2,
-        max_tokens: int = 1024,
+        max_tokens: int = None,
         max_retries: int = 3
     ) -> Dict[str, Any]:
         """Generate full completion with retry and latency/token tracking."""
         start_time = time.time()
         last_err = None
+        token_limit = max_tokens or settings.MAX_GENERATION_TOKENS
         
         for attempt in range(max_retries):
             try:
@@ -58,7 +59,7 @@ class NemotronLLMClient:
                     model=self.model,
                     messages=messages,
                     temperature=temperature,
-                    max_tokens=max_tokens
+                    max_tokens=token_limit
                 )
                 
                 if response and hasattr(response, "choices") and response.choices and len(response.choices) > 0:
@@ -95,15 +96,16 @@ class NemotronLLMClient:
         self,
         messages: List[Dict[str, str]],
         temperature: float = 0.2,
-        max_tokens: int = 1024
+        max_tokens: int = None
     ) -> Generator[str, None, None]:
         """Stream completion tokens with robust exception handling."""
+        token_limit = max_tokens or settings.MAX_GENERATION_TOKENS
         try:
             stream = self.client.chat.completions.create(
                 model=self.model,
                 messages=messages,
                 temperature=temperature,
-                max_tokens=max_tokens,
+                max_tokens=token_limit,
                 stream=True
             )
             for chunk in stream:
