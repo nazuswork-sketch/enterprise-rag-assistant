@@ -5,14 +5,17 @@ from src.vector_store import vector_store
 from src.reranker import reranker
 from src.llm import llm_client
 
-SYSTEM_PROMPT = """You are an Enterprise AI Knowledge Assistant.
-Answer the user's question accurately and concisely based ONLY on the provided context passages.
+SYSTEM_PROMPT = """You are an Enterprise AI Knowledge Assistant for engineers and technical personnel.
+Answer the user's question accurately, concisely, and strictly based on the provided context passages.
 
 RULES:
-1. Ground every claim directly in the context. DO NOT hallucinate or assume facts not present in the context.
+1. Ground every claim directly in the context. DO NOT hallucinate facts not present in the context.
 2. If the context does not contain enough information to answer the question, clearly state: "Based on the provided internal documentation, I do not have enough information to answer this question."
-3. Cite your sources inline using [Source: document_name, chunk_id].
-4. Format your response cleanly using markdown with bullet points and sections where appropriate.
+3. CITATION STANDARD: Cite your sources using exact document and page/section references in the format:
+   - For PDFs: [Source: <filename>, Page <page_number>, Section/Code <section_name>]
+   - For Markdown/Runbooks: [Source: <filename>, Section: <heading>]
+   - For Slack: [Source: <filename>, Channel: #<channel>]
+4. Format your response cleanly using markdown with bold headings and bullet points where appropriate.
 """
 
 class EnterpriseRAGEngine:
@@ -44,11 +47,13 @@ class EnterpriseRAGEngine:
     def _format_context(self, docs: List[Dict[str, Any]]) -> str:
         context_blocks = []
         for i, doc in enumerate(docs):
-            src = doc.get("source", "doc")
-            cid = doc.get("chunk_id", f"chunk_{i}")
+            src = doc.get("source", "document")
             doc_type = doc.get("doc_type", "general")
+            page_info = f" | Page: {doc.get('page')}" if doc.get("page") else ""
+            sec_info = f" | Section: {doc.get('section_id')}" if doc.get("section_id") is not None else ""
+            chan_info = f" | Channel: #{doc.get('channel')}" if doc.get("channel") else ""
             text = doc.get("text", "")
-            context_blocks.append(f"--- [PASSAGE {i+1} | Source: {src} | Type: {doc_type} | ID: {cid}] ---\n{text}")
+            context_blocks.append(f"--- [PASSAGE {i+1} | Document: {src}{page_info}{sec_info}{chan_info} | Type: {doc_type}] ---\n{text}")
         return "\n\n".join(context_blocks)
 
     def query(self, query_text: str) -> Dict[str, Any]:
@@ -84,6 +89,9 @@ class EnterpriseRAGEngine:
                 {
                     "source": d.get("source"),
                     "doc_type": d.get("doc_type"),
+                    "page": d.get("page"),
+                    "section_id": d.get("section_id"),
+                    "channel": d.get("channel"),
                     "chunk_id": d.get("chunk_id"),
                     "rerank_score": d.get("rerank_score"),
                     "hybrid_score": d.get("hybrid_score"),

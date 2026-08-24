@@ -119,11 +119,14 @@ with tab_chat:
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
             if "sources" in msg and msg["sources"]:
-                with st.expander(f"📚 View {len(msg['sources'])} Grounded Sources & Retrieval Scores"):
+                with st.expander(f"📚 View {len(msg['sources'])} Grounded Sources & Citations"):
                     for idx, s in enumerate(msg["sources"]):
+                        page_tag = f" | **Page:** `{s['page']}`" if s.get('page') else ""
+                        sec_tag = f" | **Section:** `{s['section_id']}`" if s.get('section_id') is not None else ""
+                        chan_tag = f" | **Channel:** `#{s['channel']}`" if s.get('channel') else ""
                         st.markdown(f"""
-                        **[{idx+1}] Source:** `{s['source']}` | **Rerank Score:** `{s['rerank_score']}` | **Hybrid Score:** `{s['hybrid_score']}`  
-                        *Chunk ID:* `{s['chunk_id']}`  
+                        **[{idx+1}] Document:** `{s['source']}`{page_tag}{sec_tag}{chan_tag}  
+                        *Retrieval Confidence:* Rerank: `{s['rerank_score']}` | Hybrid: `{s['hybrid_score']}` | Type: `{s.get('doc_type', 'doc')}`  
                         > {s['full_text']}
                         """)
             if "telemetry" in msg:
@@ -149,11 +152,14 @@ with tab_chat:
                 st.markdown(result["answer"])
             
             if result.get("sources"):
-                with st.expander(f"📚 View {len(result['sources'])} Grounded Sources & Retrieval Scores"):
+                with st.expander(f"📚 View {len(result['sources'])} Grounded Sources & Citations"):
                     for idx, s in enumerate(result["sources"]):
+                        page_tag = f" | **Page:** `{s['page']}`" if s.get('page') else ""
+                        sec_tag = f" | **Section:** `{s['section_id']}`" if s.get('section_id') is not None else ""
+                        chan_tag = f" | **Channel:** `#{s['channel']}`" if s.get('channel') else ""
                         st.markdown(f"""
-                        **[{idx+1}] Source:** `{s['source']}` | **Rerank Score:** `{s['rerank_score']}` | **Hybrid Score:** `{s['hybrid_score']}`  
-                        *Chunk ID:* `{s['chunk_id']}`  
+                        **[{idx+1}] Document:** `{s['source']}`{page_tag}{sec_tag}{chan_tag}  
+                        *Retrieval Confidence:* Rerank: `{s['rerank_score']}` | Hybrid: `{s['hybrid_score']}` | Type: `{s.get('doc_type', 'doc')}`  
                         > {s['full_text']}
                         """)
                         
