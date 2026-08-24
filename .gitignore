@@ -1,0 +1,32 @@
+# Environment variables & API keys (CRITICAL)
+.env
+.env.local
+.env.*
+
+# Python Cache & Bytecode
+__pycache__/
+*.py[cod]
+*.class
+*.so
+.Python
+
+# Local Virtual Environments
+venv/
+.venv/
+env/
+ENV/
+
+# Local Storage, Models & Logs
+storage/qdrant_db/
+storage/flashrank_cache/
+*.log
+eval_report.json
+synthetic_eval_report.json
+
+# Arize Phoenix tracing db
+.phoenix/
+
+# OS artifacts
+.DS_Store
+__MACOSX/
+Thumbs.db

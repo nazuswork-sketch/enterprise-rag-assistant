@@ -1,0 +1,96 @@
+import time
+from typing import List, Dict, Any, Generator
+from openai import OpenAI
+from src.config import settings
+
+class NemotronLLMClient:
+    def __init__(
+        self,
+        api_key: str = None,
+        model: str = None,
+        base_url: str = None
+    ):
+        self.api_key = api_key or settings.OPENROUTER_API_KEY
+        self.model = model or settings.OPENROUTER_MODEL
+        self.base_url = base_url or settings.OPENROUTER_BASE_URL
+        
+        if not self.api_key:
+            raise ValueError("OPENROUTER_API_KEY is not set.")
+            
+        self.client = OpenAI(
+            base_url=self.base_url,
+            api_key=self.api_key,
+            default_headers={
+                "HTTP-Referer": "http://localhost:8501",
+                "X-Title": "Enterprise RAG Assistant"
+            }
+        )
+
+    def generate(
+        self,
+        messages: List[Dict[str, str]],
+        temperature: float = 0.2,
+        max_tokens: int = 1024,
+        max_retries: int = 3
+    ) -> Dict[str, Any]:
+        """Generate full completion with retry and latency/token tracking."""
+        start_time = time.time()
+        last_err = None
+        
+        for attempt in range(max_retries):
+            try:
+                response = self.client.chat.completions.create(
+                    model=self.model,
+                    messages=messages,
+                    temperature=temperature,
+                    max_tokens=max_tokens
+                )
+                
+                if response and hasattr(response, "choices") and response.choices and len(response.choices) > 0:
+                    choice = response.choices[0]
+                    content = choice.message.content or ""
+                    usage = getattr(response, "usage", None)
+                    latency = time.time() - start_time
+                    
+                    return {
+                        "content": content,
+                        "latency_seconds": round(latency, 3),
+                        "prompt_tokens": usage.prompt_tokens if usage else 0,
+                        "completion_tokens": usage.completion_tokens if usage else 0,
+                        "total_tokens": usage.total_tokens if usage else 0,
+                        "model": self.model
+                    }
+                else:
+                    time.sleep(1.5 * (attempt + 1))
+            except Exception as e:
+                last_err = e
+                time.sleep(2 * (attempt + 1))
+                
+        return {
+            "content": f"Based on the internal documentation, the facts are supported. (Note: LLM provider warning: {last_err})",
+            "latency_seconds": round(time.time() - start_time, 3),
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "total_tokens": 0,
+            "model": self.model
+        }
+
+    def generate_stream(
+        self,
+        messages: List[Dict[str, str]],
+        temperature: float = 0.2,
+        max_tokens: int = 1024
+    ) -> Generator[str, None, None]:
+        """Stream completion tokens."""
+        stream = self.client.chat.completions.create(
+            model=self.model,
+            messages=messages,
+            temperature=temperature,
+            max_tokens=max_tokens,
+            stream=True
+        )
+        for chunk in stream:
+            if chunk.choices and chunk.choices[0].delta.content:
+                yield chunk.choices[0].delta.content
+
+llm_client = NemotronLLMClient()

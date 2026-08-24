@@ -1,0 +1,27 @@
+[
+  {
+    "id": "gold_01",
+    "question": "What is the response SLA for a SEV-1 production incident and who gets paged?",
+    "ground_truth": "The response SLA for a SEV-1 incident is 5 minutes, and PagerDuty escalates to the on-call lead."
+  },
+  {
+    "id": "gold_02",
+    "question": "What are the exact steps to perform a Kubernetes rollback for enterprise-core-service?",
+    "ground_truth": "1. Identify the previous stable release tag via git tag --sort=-creatordate. 2. Run helm rollback enterprise-core-service [REVISION_NUMBER] -n production. 3. Flush Redis cluster cache with FLUSHDB. 4. Post an incident summary to #incident-room on Slack."
+  },
+  {
+    "id": "gold_03",
+    "question": "What is the vector dimension for our new Gemini Embedding 2 model?",
+    "ground_truth": "The vector dimension for Gemini Embedding 2 is 3072."
+  },
+  {
+    "id": "gold_04",
+    "question": "How much is the annual learning and development stipend and can it be used for AI API credits?",
+    "ground_truth": "The annual learning and development stipend is $1,500 per year, and it can be used for AI API credits, technical books, and certifications via Concur."
+  },
+  {
+    "id": "gold_05",
+    "question": "What is the mandatory encryption standard for Level 3 Confidential data?",
+    "ground_truth": "Level 3 Confidential data requires AES-256 encryption at rest and TLS 1.3 in transit."
+  }
+]

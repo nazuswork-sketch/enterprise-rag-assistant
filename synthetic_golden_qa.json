@@ -1,0 +1,65 @@
+[
+  {
+    "id": "qa_001",
+    "source_file": "3M_2015_10K.pdf",
+    "question": "What is the total number of distinct Euro-denominated note series registered on the New York Stock Exchange, and what are their combined principal amounts in euros?",
+    "ground_truth": "There are 5 distinct Euro-denominated note series registered on the New York Stock Exchange with combined principal amounts of EUR 3,000 million (EUR 500M due 2018 + EUR 750M due 2026 + EUR 650M due 2020 + EUR 600M due 2023 + EUR 500M due 2030).",
+    "source_context_preview": "[Page 1]\nTable of Contents  \n \nlow\n \nUNITED STATES\nSECURITIES AND EXCHANGE COMMISSION\nWashington, D.C. 20549\n \nFORM 10-K\n \n☒\n   ANNUAL REPORT PURSUANT TO SECTION 13 OR 15(d) OF THE\nSECURITIES EXCHANGE ACT OF 1934\nFor the fiscal year ended \nDecember 31, 2015\n \nCommission file number 1-3285\n \n3M \nCOMP..."
+  },
+  {
+    "id": "qa_002",
+    "source_file": "3M_2015_10K.pdf",
+    "question": "By what date must the definitive proxy statement be filed, and for which annual meeting date is it being prepared, given the fiscal year ended December 31, 2015?",
+    "ground_truth": "The definitive proxy statement must be filed within 120 days after December 31, 2015 (by April 30, 2016) for the annual meeting to be held on May 10, 2016.",
+    "source_context_preview": "[Page 1]\nTable of Contents  \n \nlow\n \nUNITED STATES\nSECURITIES AND EXCHANGE COMMISSION\nWashington, D.C. 20549\n \nFORM 10-K\n \n☒\n   ANNUAL REPORT PURSUANT TO SECTION 13 OR 15(d) OF THE\nSECURITIES EXCHANGE ACT OF 1934\nFor the fiscal year ended \nDecember 31, 2015\n \nCommission file number 1-3285\n \n3M \nCOMP..."
+  },
+  {
+    "id": "qa_003",
+    "source_file": "3M_2015_10K.pdf",
+    "question": "What was the approximate per-share market value of 3M's voting stock held by nonaffiliates as of January 31, 2016, based on the aggregate market value and shares outstanding reported?",
+    "ground_truth": "Approximately $151.06 per share (calculated from $91.4 billion aggregate market value divided by 605,038,186 shares outstanding).",
+    "source_context_preview": "[Page 1]\nTable of Contents  \n \nlow\n \nUNITED STATES\nSECURITIES AND EXCHANGE COMMISSION\nWashington, D.C. 20549\n \nFORM 10-K\n \n☒\n   ANNUAL REPORT PURSUANT TO SECTION 13 OR 15(d) OF THE\nSECURITIES EXCHANGE ACT OF 1934\nFor the fiscal year ended \nDecember 31, 2015\n \nCommission file number 1-3285\n \n3M \nCOMP..."
+  },
+  {
+    "id": "qa_004",
+    "source_file": "ADOBE_2015_10K.pdf",
+    "question": "What was the aggregate market value of Adobe Systems Incorporated's common stock held by non-affiliates on the last business day of the registrant's most recently completed second fiscal quarter, and what was the fiscal year end date for that fiscal year?",
+    "ground_truth": "The aggregate market value was $31,964,797,377 on May 29, 2015, and the fiscal year ended November 27, 2015.",
+    "source_context_preview": "[Page 1]\nUNITED STATES\nSECURITIES AND EXCHANGE COMMISSION\nWashington, D.C. 20549\n_____________________________\n FORM 10-K\n(Mark One)\nANNUAL REPORT PURSUANT TO SECTION 13 OR 15(d) OF THE SECURITIES EXCHANGE ACT OF 1934\nFor the fiscal year ended November 27, 2015 \n or\nTRANSITION REPORT PURSUANT TO SEC..."
+  },
+  {
+    "id": "qa_005",
+    "source_file": "ADOBE_2015_10K.pdf",
+    "question": "In which state is Adobe Systems Incorporated incorporated, and what is the address of its principal executive offices?",
+    "ground_truth": "Adobe Systems Incorporated is incorporated in Delaware, and its principal executive offices are located at 345 Park Avenue, San Jose, California 95110-2704.",
+    "source_context_preview": "[Page 1]\nUNITED STATES\nSECURITIES AND EXCHANGE COMMISSION\nWashington, D.C. 20549\n_____________________________\n FORM 10-K\n(Mark One)\nANNUAL REPORT PURSUANT TO SECTION 13 OR 15(d) OF THE SECURITIES EXCHANGE ACT OF 1934\nFor the fiscal year ended November 27, 2015 \n or\nTRANSITION REPORT PURSUANT TO SEC..."
+  },
+  {
+    "id": "qa_006",
+    "source_file": "ADOBE_2015_10K.pdf",
+    "question": "How many shares of common stock were issued and outstanding as of January 15, 2016, and what is the par value per share of that common stock?",
+    "ground_truth": "As of January 15, 2016, 498,330,407 shares of common stock with a par value of $0.0001 per share were issued and outstanding.",
+    "source_context_preview": "[Page 1]\nUNITED STATES\nSECURITIES AND EXCHANGE COMMISSION\nWashington, D.C. 20549\n_____________________________\n FORM 10-K\n(Mark One)\nANNUAL REPORT PURSUANT TO SECTION 13 OR 15(d) OF THE SECURITIES EXCHANGE ACT OF 1934\nFor the fiscal year ended November 27, 2015 \n or\nTRANSITION REPORT PURSUANT TO SEC..."
+  },
+  {
+    "id": "qa_007",
+    "source_file": "ADOBE_2016_10K.pdf",
+    "question": "What was the aggregate market value of Adobe's common stock held by non-affiliates on the last business day of its second fiscal quarter for the fiscal year ended December 2, 2016, and on which exchange is this stock registered?",
+    "ground_truth": "$36,974,539,289 on June 3, 2016; registered on The NASDAQ Stock Market LLC (NASDAQ Global Select Market)",
+    "source_context_preview": "[Page 1]\nUNITED STATES\nSECURITIES AND EXCHANGE COMMISSION\nWashington, D.C. 20549\n_____________________________\n FORM 10-K\n(Mark One)\nANNUAL REPORT PURSUANT TO SECTION 13 OR 15(d) OF THE SECURITIES EXCHANGE ACT OF 1934\nFor the fiscal year ended December 2, 2016 \n or\nTRANSITION REPORT PURSUANT TO SECT..."
+  },
+  {
+    "id": "qa_008",
+    "source_file": "ADOBE_2016_10K.pdf",
+    "question": "As of January 13, 2017, how many shares of Adobe's common stock with a par value of $0.0001 per share were issued and outstanding, and what was the company's filer status as indicated in this Form 10-K?",
+    "ground_truth": "494,078,475 shares; large accelerated filer",
+    "source_context_preview": "[Page 1]\nUNITED STATES\nSECURITIES AND EXCHANGE COMMISSION\nWashington, D.C. 20549\n_____________________________\n FORM 10-K\n(Mark One)\nANNUAL REPORT PURSUANT TO SECTION 13 OR 15(d) OF THE SECURITIES EXCHANGE ACT OF 1934\nFor the fiscal year ended December 2, 2016 \n or\nTRANSITION REPORT PURSUANT TO SECT..."
+  },
+  {
+    "id": "qa_009",
+    "source_file": "ADOBE_2016_10K.pdf",
+    "question": "In which state was Adobe Systems Incorporated organized, what is its IRS Employer Identification Number, and what was the basis for determining the aggregate market value of its common stock held by non-affiliates on June 3, 2016?",
+    "ground_truth": "Delaware; 77-0019522; based on the closing sales price of the registrant's common stock on that date",
+    "source_context_preview": "[Page 1]\nUNITED STATES\nSECURITIES AND EXCHANGE COMMISSION\nWashington, D.C. 20549\n_____________________________\n FORM 10-K\n(Mark One)\nANNUAL REPORT PURSUANT TO SECTION 13 OR 15(d) OF THE SECURITIES EXCHANGE ACT OF 1934\nFor the fiscal year ended December 2, 2016 \n or\nTRANSITION REPORT PURSUANT TO SECT..."
+  }
+]

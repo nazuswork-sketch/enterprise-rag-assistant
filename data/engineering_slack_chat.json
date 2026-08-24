@@ -1,0 +1,41 @@
+{
+  "channel": "engineering-announcements",
+  "messages": [
+    {
+      "user": "sarah.chen",
+      "ts": "2026-08-10 10:15:00",
+      "text": "Reminder: We have switched our default AI embedding provider to Gemini Embedding 2. Vector dimension is 3072. All vector collections must be updated.",
+      "replies": [
+        {
+          "user": "alex.kumar",
+          "text": "Does this impact the Qdrant local cluster?"
+        },
+        {
+          "user": "sarah.chen",
+          "text": "Yes, re-indexing is required. Hybrid search now pairs Gemini 3072-dim vectors with BM25 Okapi."
+        }
+      ]
+    },
+    {
+      "user": "marcus.vance",
+      "ts": "2026-08-12 14:30:00",
+      "text": "WiFi and VPN update: The new internal corporate VPN is WireGuard-based at vpn.corp.internal:51820. Legacy OpenVPN will be retired on Sept 1st.",
+      "replies": []
+    },
+    {
+      "user": "elena.rostova",
+      "ts": "2026-08-15 09:00:00",
+      "text": "Expense Policy update: Employee learning & development stipend is $1,500/year, claimable via Concur with receipts.",
+      "replies": [
+        {
+          "user": "david.kim",
+          "text": "Can we use this for AI API credits and certifications?"
+        },
+        {
+          "user": "elena.rostova",
+          "text": "Yes, technical books, certifications, and AI API credits are fully eligible."
+        }
+      ]
+    }
+  ]
+}
