@@ -1,3 +1,4 @@
+import re
 import time
 from typing import List, Dict, Any, Generator
 from openai import OpenAI
@@ -41,6 +42,23 @@ class NemotronLLMClient:
             )
         return self._client
 
+    def _clean_content(self, text: str) -> str:
+        """Strip internal scratchpad reasoning/thinking traces if emitted by reasoning models."""
+        if not text:
+            return ""
+        # 1. Remove XML <think>...</think> blocks
+        if "<think>" in text:
+            text = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
+        # 2. Strip "Here's a thinking process:" scratchpads
+        if "Here's a thinking process:" in text or "Thinking Process:" in text:
+            for marker in ["\n\nFinal Answer:\n", "\n\nAnswer:\n", "\n\n---\n\n", "\n\nBased on the "]:
+                if marker in text:
+                    text = text[text.find(marker) + len(marker):].strip()
+                    if marker.strip().startswith("Based on"):
+                        text = "Based on " + text
+                    break
+        return text.strip()
+
     def generate(
         self,
         messages: List[Dict[str, str]],
@@ -64,7 +82,7 @@ class NemotronLLMClient:
                 
                 if response and hasattr(response, "choices") and response.choices and len(response.choices) > 0:
                     choice = response.choices[0]
-                    content = choice.message.content or ""
+                    content = self._clean_content(choice.message.content or "")
                     usage = getattr(response, "usage", None)
                     latency = time.time() - start_time
                     
