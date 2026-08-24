@@ -1,4 +1,5 @@
 import os
+import re
 import uuid
 from typing import List, Dict, Any, Tuple
 from rank_bm25 import BM25Okapi
@@ -6,6 +7,21 @@ from qdrant_client import QdrantClient
 from qdrant_client.http import models
 from src.config import settings
 from src.embeddings import embedding_client
+
+# Fast standard English stopwords for BM25 keyword optimization
+BM25_STOPWORDS = {
+    "a", "about", "above", "after", "again", "against", "all", "am", "an", "and", "any", "are", 
+    "as", "at", "be", "because", "been", "before", "being", "below", "between", "both", "but", 
+    "by", "can", "did", "do", "does", "doing", "don", "down", "during", "each", "few", "for", 
+    "from", "further", "had", "has", "have", "having", "he", "her", "here", "hers", "herself", 
+    "him", "himself", "his", "how", "i", "if", "in", "into", "is", "it", "its", "itself", "just", 
+    "me", "more", "most", "my", "myself", "no", "nor", "not", "now", "of", "off", "on", "once", 
+    "only", "or", "other", "our", "ours", "ourselves", "out", "over", "own", "s", "same", "she", 
+    "should", "so", "some", "such", "than", "that", "the", "their", "theirs", "them", "themselves", 
+    "then", "there", "these", "they", "this", "those", "through", "to", "too", "under", "until", 
+    "up", "very", "was", "we", "were", "what", "when", "where", "which", "while", "who", "whom", 
+    "why", "will", "with", "you", "your", "yours", "yourself", "yourselves"
+}
 
 class HybridVectorStore:
     """Qdrant Vector Store (Cloud or Local Embedded) with BM25 Sparse Hybrid Fusion."""
@@ -50,17 +66,32 @@ class HybridVectorStore:
             )
 
     def _tokenize(self, text: str) -> List[str]:
-        return [w.lower() for w in text.split() if len(w) > 1]
+        """Extract alphanumeric tokens (preserving hyphenated tech terms) and filter stopwords."""
+        if not text:
+            return []
+        raw_tokens = re.findall(r'\b[a-zA-Z0-9_\-\.]{2,}\b', text.lower())
+        return [t for t in raw_tokens if t not in BM25_STOPWORDS and not t.isdigit()]
 
     def _rebuild_bm25(self):
+        """Scrolls all records from vector DB in pages and builds BM25 sparse index."""
         try:
-            records, _ = self.client.scroll(
-                collection_name=self.collection_name,
-                limit=10000,
-                with_payload=True,
-                with_vectors=False
-            )
-            self.bm25_corpus = [r.payload for r in records if r.payload]
+            all_records = []
+            next_offset = None
+            page_size = 500
+            
+            while True:
+                records, next_offset = self.client.scroll(
+                    collection_name=self.collection_name,
+                    limit=page_size,
+                    offset=next_offset,
+                    with_payload=True,
+                    with_vectors=False
+                )
+                all_records.extend(records)
+                if next_offset is None or not records:
+                    break
+                    
+            self.bm25_corpus = [r.payload for r in all_records if r.payload]
             tokenized_corpus = [self._tokenize(doc.get("text", "")) for doc in self.bm25_corpus]
             if tokenized_corpus:
                 self.bm25_index = BM25Okapi(tokenized_corpus)

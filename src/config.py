@@ -29,8 +29,8 @@ class Settings:
     # RAG Retrieval Configuration
     RETRIEVAL_TOP_K: int = 15     # Number of candidates from hybrid search
     RERANK_TOP_N: int = 5         # Number of candidates sent to LLM after reranker
-    CHUNK_SIZE: int = 4000        # Comprehensive multi-page semantic blocks
-    CHUNK_OVERLAP: int = 400
+    CHUNK_SIZE: int = 1500        # Optimized semantic chunk size for high-precision fact lookup
+    CHUNK_OVERLAP: int = 200
     
     # Observability
     PHOENIX_PORT: int = 6006

@@ -67,12 +67,13 @@ class NemotronLLMClient:
                 time.sleep(2 * (attempt + 1))
                 
         return {
-            "content": f"Based on the internal documentation, the facts are supported. (Note: LLM provider warning: {last_err})",
+            "content": f"⚠️ [Generation Error] Unable to generate grounded response due to upstream LLM provider unavailability ({last_err}). Please verify API status or retry shortly.",
             "latency_seconds": round(time.time() - start_time, 3),
             "prompt_tokens": 0,
             "completion_tokens": 0,
             "total_tokens": 0,
-            "model": self.model
+            "model": self.model,
+            "error": str(last_err)
         }
 
     def generate_stream(

@@ -74,26 +74,34 @@ Generated Answer:
         elif "```" in content:
             content = content.split("```")[1].split("```")[0].strip()
             
+        eval_status = "SUCCESS"
         try:
-            scores = json.loads(content)
-        except Exception:
+            # Handle potential JSON substrings within raw response
+            if "{" in content and "}" in content:
+                json_str = content[content.find("{"):content.rfind("}") + 1]
+                scores = json.loads(json_str)
+            else:
+                scores = json.loads(content)
+        except Exception as e:
+            eval_status = "PARSE_ERROR"
             scores = {
-                "faithfulness": 0.8,
-                "context_precision": 0.8,
-                "context_recall": 0.8,
-                "answer_relevancy": 0.8,
-                "reasoning": "Fallback parsing for judge response."
+                "faithfulness": 0.0,
+                "context_precision": 0.0,
+                "context_recall": 0.0,
+                "answer_relevancy": 0.0,
+                "reasoning": f"Judge parsing failed ({e}). Raw response: {content[:120]}..."
             }
             
         return {
             "question": question,
             "ground_truth": ground_truth,
             "generated_answer": generated_answer,
-            "faithfulness": scores.get("faithfulness", 0.0),
-            "context_precision": scores.get("context_precision", 0.0),
-            "context_recall": scores.get("context_recall", 0.0),
-            "answer_relevancy": scores.get("answer_relevancy", 0.0),
+            "faithfulness": float(scores.get("faithfulness", 0.0)),
+            "context_precision": float(scores.get("context_precision", 0.0)),
+            "context_recall": float(scores.get("context_recall", 0.0)),
+            "answer_relevancy": float(scores.get("answer_relevancy", 0.0)),
             "reasoning": scores.get("reasoning", ""),
+            "eval_status": eval_status,
             "latency_seconds": round(eval_latency, 3),
             "sources_count": len(rag_output["sources"])
         }
